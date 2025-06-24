@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Guess the Song</title>
+  <style>
+    body { font-family:sans-serif; text-align:center; margin: 20px; }
+    #timer, #roundScore { font-size:1.2em; margin: 10px; }
+    #guess { font-size:1em; padding:5px; width:200px; }
+    #submitBtn { padding:5px 10px; }
+  </style>
+</head>
+<body>
+  <div id="timer">Time Left: <span id="timeLeft">300</span>s</div>
+  <div id="roundScore">Round Score: <span id="score">0</span></div>
+  <audio id="player" controls>
+    <source src="{{ song_audio }}" type="audio/mpeg">
+    Your browser does not support audio.
+  </audio>
+  <p>Type your guess:</p>
+  <input id="guess" autocomplete="off" />
+  <button id="submitBtn">Guess</button>
+  <p id="feedback"></p>
+
+  <script src="{{ url_for('static', filename='main.js') }}"></script>
+  <script>
+    // bootstrap variables from template
+    const CORRECT_TITLE = "{{ song_title|e }}";
+  </script>
+</body>
+</html>
