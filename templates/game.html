@@ -1,31 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Guess the Song</title>
-  <style>
-    body { font-family:sans-serif; text-align:center; margin: 20px; }
-    #timer, #roundScore { font-size:1.2em; margin: 10px; }
-    #guess { font-size:1em; padding:5px; width:200px; }
-    #submitBtn { padding:5px 10px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Guessing Game</title>
+    <link rel="stylesheet" href="static/styles.css"> <!-- Optional: Link to your CSS file -->
 </head>
 <body>
-  <div id="timer">Time Left: <span id="timeLeft">300</span>s</div>
-  <div id="roundScore">Round Score: <span id="score">0</span></div>
-  <audio id="player" controls>
-    <source src="{{ song_audio }}" type="audio/mpeg">
-    Your browser does not support audio.
-  </audio>
-  <p>Type your guess:</p>
-  <input id="guess" autocomplete="off" />
-  <button id="submitBtn">Guess</button>
-  <p id="feedback"></p>
+    <h1>Guess the Song!</h1>
+    <h2>Current Song: {{ song_title }}</h2>
+    <h3>Artists: {{ song_artists }}</h3>
+    
+    <audio controls autoplay>
+        <source src="{{ song_audio }}" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
 
-  <script src="{{ url_for('static', filename='main.js') }}"></script>
-  <script>
-    // bootstrap variables from template
-    const CORRECT_TITLE = "{{ song_title|e }}";
-  </script>
+    <div>
+        <label for="guess_title">Guess the Title:</label>
+        <input type="text" id="guess_title" placeholder="Enter song title">
+    </div>
+    <div>
+        <label for="guess_artist">Guess the Artist:</label>
+        <input type="text" id="guess_artist" placeholder="Enter artist name">
+    </div>
+    <button id="submit_guess">Submit Guess</button>
+
+    <div id="result"></div>
+    <div id="score">Round Score: 0</div>
+    <div id="top_score">Top Score: {{ top_score }}</div>
+
+    <script src="static/game.js"></script> <!-- Link to your JavaScript file -->
 </body>
 </html>
