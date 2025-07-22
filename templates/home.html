@@ -1,19 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Song Guessing Game</title>
-  <style>
-    body { font-family: sans-serif; text-align:center; margin-top:50px; }
-    .score { font-size:1.5em; color: #333; }
-    .btn { padding:10px 20px; font-size:1em; cursor:pointer; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Guessing Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        .menu {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 300px;
+            margin: 30px auto;
+        }
+        .btn {
+            padding: 10px 15px;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-  <h1>Welcome to the Song Guessing Game!</h1>
-  <p class="score">Your Top Score: <strong>{{ top_score }}</strong></p>
-  <button class="btn" onclick="location.href='{{ url_for('start') }}'">
-    Play Now!
-  </button>
+    <h1>Welcome to the Music Guessing Game!</h1>
+    <p>High Score: {{ high_score }}</p>
+    
+    <div class="menu">
+        <a href="{{ url_for('game') }}" class="btn">Start Game</a>
+        <a href="{{ url_for('settings') }}" class="btn">Settings</a>
+    </div>
 </body>
 </html>

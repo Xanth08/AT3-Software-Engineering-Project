@@ -1,10 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button, .btn {
+            padding: 8px 16px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-$END$
+    <h1>Settings</h1>
+    <form method="POST">
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="guess_artist" {% if guess_artist %}checked{% endif %}>
+                Guess the Artist
+            </label>
+        </div>
+        
+        <div class="form-group">
+            <label>
+                Rounds (5-10):
+                <input type="range" name="rounds" min="5" max="10" value="{{ rounds }}" oninput="this.nextElementSibling.value = this.value">
+                <output>{{ rounds }}</output>
+            </label>
+        </div>
+        
+        <div class="form-group">
+            <label>
+                Volume:
+                <input type="range" name="volume" min="0" max="1" step="0.1" value="{{ volume }}" oninput="this.nextElementSibling.value = this.value">
+                <output>{{ volume }}</output>
+            </label>
+        </div>
+        
+        <div class="buttons">
+            <button type="submit">Save Settings</button>
+            <a href="{{ url_for('home') }}" class="btn">Cancel</a>
+        </div>
+    </form>
 </body>
 </html>

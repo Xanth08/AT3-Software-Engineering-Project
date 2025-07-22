@@ -3,33 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Music Guessing Game</title>
-    <link rel="stylesheet" href="static/styles.css"> <!-- Optional: Link to your CSS file -->
+    <title>Guess the Song!</title>
 </head>
 <body>
     <h1>Guess the Song!</h1>
-    <h2>Current Song: {{ song_title }}</h2>
-    <h3>Artists: {{ song_artists }}</h3>
-    
-    <audio controls autoplay>
-        <source src="{{ song_audio }}" type="audio/mpeg">
+    <audio controls>
+        <source src="{{ url_for('static', filename=song.file) }}" type="audio/mpeg">
         Your browser does not support the audio element.
     </audio>
-
     <div>
-        <label for="guess_title">Guess the Title:</label>
-        <input type="text" id="guess_title" placeholder="Enter song title">
+        <p>Score: {{ score }}</p>
+         <form method="POST">
+            <input type="text" name="song_guess" placeholder="Guess the song" required>
+            {% if session.get('guess_artist', False) %}
+            <input type="text" name="artist_guess" placeholder="Guess the artist">
+            {% endif %}
+            <button type="submit">Submit Guess</button>
+        </form>
     </div>
-    <div>
-        <label for="guess_artist">Guess the Artist:</label>
-        <input type="text" id="guess_artist" placeholder="Enter artist name">
-    </div>
-    <button id="submit_guess">Submit Guess</button>
-
-    <div id="result"></div>
-    <div id="score">Round Score: 0</div>
-    <div id="top_score">Top Score: {{ top_score }}</div>
-
-    <script src="static/game.js"></script> <!-- Link to your JavaScript file -->
 </body>
 </html>
