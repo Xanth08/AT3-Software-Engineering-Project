@@ -59,75 +59,31 @@ SONGS = [
     {"title": ["Where Have You Been"],         "file": "music/Where_Have_You_Been-Rihanna.mp3",      "artist": ["Rihanna"]},
     {"title": ["Windfall"],         "file": "music/Windfall-TheFatRat.mp3",      "artist": ["TheFatRat"]},
 
-
-
 ]
 
-@app.route("/")
-def home():
-    top_score = session.get("top_score", 0)
-    return render_template("home.html", top_score=top_score)
-
-@app.route("/start")
-def start():
-    # Reset round state
-    session["round_score"] = 0
-    session["playlist"]    = random.sample(SONGS, len(SONGS))
-    session["current_index"] = 0
-    return redirect(url_for("game"))
-
-@app.route("/game")
-def game():
-    # If we’ve exhausted the playlist, reshuffle
-    playlist = session.get("playlist", [])
-    idx      = session.get("current_index", 0)
-    if idx >= len(playlist):
-        session["playlist"]    = random.sample(SONGS, len(SONGS))
-        session["current_index"] = 0
-        idx = 0
-
-    song_meta = session["playlist"][idx]
-    audio_url = url_for("static", filename=f"music/{song_meta['file']}")
-
-    return render_template(
-        "game.html",
-        song_audio=audio_url,
-        song_title=song_meta["title"]
-    )
-
-@app.route("/submit_guess", methods=["POST"])
-def submit_guess():
-    data    = request.get_json()
-    guess   = data.get("guess", "").strip().lower()
-    elapsed = float(data.get("elapsed", 0))
-
-    idx          = session.get("current_index", 0)
-    playlist     = session.get("playlist", [])
-    correct_title = playlist[idx]["title"].strip().lower()
-
-    points_awarded = 0
-    if guess == correct_title:
-        # e.g. award up to 30 − elapsed seconds
-        points_awarded = max(0, int(30 - elapsed))
-        session["round_score"] = session.get("round_score", 0) + points_awarded
-
-    session["current_index"] = idx + 1
-
-    return jsonify({
-        "correct":     guess == correct_title,
-        "points":      points_awarded,
-        "round_score": session.get("round_score", 0)
-    })
-
-@app.route("/end_round", methods=["POST"])
-def end_round():
-    round_score = session.get("round_score", 0)
-    top_score   = session.get("top_score", 0)
-
-    if round_score > top_score:
-        session["top_score"] = round_score
-
-    return jsonify({ "new_top": session.get("top_score", 0) })
-
-if __name__ == "__main__":
+    if 'score' not in session:
+        session['score'] = 0
+        session['current_round'] = 0
+        session['total_rounds'] = session.get('rounds', 5)
+        session['current_song'] = random.choice(songs)
+    if request.method == 'POST':
+        user_song_guess = request.form.get('song_guess')
+        user_artist_guess = request.form.get('artist_guess')
+        correct_song = session['current_song']['title']
+        correct_artist = session['current_song']['artist']
+        # Check guesses
+        if user_song_guess.lower() == correct_song.lower():
+            session['score'] += 10  # Award points for correct song
+        if session.get('guess_artist', False) and user_artist_guess.lower() == correct_artist.lower():
+            session['score'] += 10  # Award points for correct artist
+        session['current_round'] += 1
+        if session['current_round'] < session['total_rounds']:
+            session['current_song'] = random.choice(songs)
+        else:
+            if session['score'] > session.get('high_score', 0):
+                session['high_score'] = session['score']
+            return redirect(url_for('home'))
+    return render_template('game.html', song=session['current_song'], score=session['score'],
+                           guess_artist=session.get('guess_artist', False))
+if __name__ == '__main__':
     app.run(debug=True)
