@@ -1,12 +1,13 @@
 from flask import Flask, render_template, session, redirect, url_for, request, jsonify
+from datetime import datetime
 import random
 
 app = Flask(__name__)
 app.secret_key = "replace-with-a-random-secret-key"
 
 songs = [
-    {"title": ["abcdefu"],      "file": "music/abcdefu-GAYLE.mp3",       "artists": ["GAYLE"]},
-    {"title": ["Ark"],   "file": "music/Ark-Star_Party,Zookeepers.mp3",       "artists": ["Star Party","Zookeepers"]},
+    {"title": ["abcdefu"],      "file": "music/abcdefu-GAYLE.mp3",       "artist": ["GAYLE"]},
+    {"title": ["Ark"],   "file": "music/Ark-Star_Party,Zookeepers.mp3",       "artist": ["Star Party","Zookeepers"]},
     {"title": ["Because of You"],         "file": "music/Because_of_You-Kelly_Clarkson.mp3",      "artist": ["Kelly Clarkson"]},
     {"title": ["Cipher"],         "file": "music/Cipher-Kevin MacLeod.mp3",      "artist": ["Kevin MacLeod"]},
     {"title": ["Colorblind"],         "file": "music/Colorblind-Panda_Eyes.mp3",      "artist": ["Panda Eyes"]},
@@ -81,54 +82,83 @@ def settings():
 
 @app.route('/game', methods=['GET', 'POST'])
 def game():
-    # Initialize game session if not already started
     if 'game_started' not in session:
-        session['game_started'] = True
-        session['score'] = 0
-        session['current_round'] = 1  # Start at round 1
-        session['total_rounds'] = session.get('rounds', 5)
-        session['current_song'] = random.choice(songs)
+        initialize_game_session()
     
     if request.method == 'POST':
-        user_song_guess = request.form.get('song_guess')
-        user_artist_guess = request.form.get('artist_guess')
-        correct_titles = session['current_song']['title']
-        correct_artists = session['current_song']['artist']  # Changed from artist to artists to match data structure
+        process_guess()
         
-        # Check guesses
-        if any(user_song_guess.lower() == title.lower() for title in correct_titles):
-            session['score'] += 10  # Award points for correct song
-        if session.get('guess_artist', False) and any(user_artist_guess.lower() == artist.lower() for artist in correct_artists):
-            session['score'] += 10  # Award points for correct artist
-        
-        # Move to next round or end game
         if session['current_round'] < session['total_rounds']:
             session['current_round'] += 1
-            session['current_song'] = random.choice([s for s in songs if s != session['current_song']])  # Ensure new song
+            setup_new_round()
         else:
-            # Store high score and clear game state
-            if session['score'] > session.get('high_score', 0):
-                session['high_score'] = session['score']
-            session.pop('game_started', None)
-            session.pop('score', None)
-            session.pop('current_round', None)
-            session.pop('total_rounds', None)
-            session.pop('current_song', None)
+            end_game()
             return redirect(url_for('game_over'))
     
+    return render_game_template()
+
+def initialize_game_session():
+    session['game_started'] = True
+    session['score'] = 0
+    session['current_round'] = 1
+    session['total_rounds'] = session.get('rounds', 5)
+    session['start_time'] = datetime.now().timestamp()
+    session['current_song'] = random.choice(songs)
+
+def process_guess():
+    user_song_guess = request.form.get('song_guess')
+    user_artist_guess = request.form.get('artist_guess')
+    correct_titles = session['current_song']['title']
+    correct_artists = session['current_song']['artist']
+
+    # Calculate time taken (in seconds)
+    time_taken = datetime.now().timestamp() - session['start_time']
+    
+    # Base points (decrease with time)
+    if any(user_song_guess.lower() == title.lower() for title in correct_titles):
+        base_points = max(20 - int(time_taken), 5)  # Minimum 5 points
+        session['score'] += base_points
+    
+    # Bonus artist points
+    if session.get('guess_artist', False) and any(user_artist_guess.lower() == artist.lower() for artist in correct_artists):
+        session['score'] += 10  # Flat bonus for artist
+
+def setup_new_round():
+    session['current_song'] = get_new_song()
+    session['start_time'] = datetime.now().timestamp()
+
+def get_new_song():
+    remaining_songs = [s for s in songs if s != session['current_song']]
+    return random.choice(remaining_songs) if remaining_songs else random.choice(songs)
+
+def end_game():
+    if session['score'] > session.get('high_score', 0):
+        session['high_score'] = session['score']
+    # Do not clear the score here, just clear the game session
+    clear_game_session()
+
+def clear_game_session():
+    for key in ['game_started',  'current_round', 'total_rounds', 'current_song', 'start_time']:
+        session.pop(key, None)
+
+def render_game_template():
     return render_template('game.html', 
-                         song=session['current_song'], 
+                         song=session['current_song'],
                          score=session['score'],
                          current_round=session['current_round'],
                          total_rounds=session['total_rounds'],
                          guess_artist=session.get('guess_artist', False))
 
+@app.route('/next-round')
+def next_round():
+    return redirect(url_for('game'))
 
 @app.route('/game-over')
 def game_over():
+    final_score = session.get('score', 0)
     return render_template('results.html', 
-                         score=session.get('score', 0),
-                         high_score=session.get('high_score', 0))
+                           final=final_score,
+                           high_score=session.get('high_score', 0))
 
 if __name__ == '__main__':
     app.run(debug=True)

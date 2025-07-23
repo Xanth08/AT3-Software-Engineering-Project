@@ -3,40 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Over</title>
+    <title>Music Quiz - Game Over</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding-top: 50px;
+        @keyframes confetti {
+            0% { transform: translateY(0) rotate(0); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
         }
-        .results {
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .btn-home {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background: #4CAF50;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            opacity: 0;
+            animation: confetti 3s ease-out forwards;
         }
     </style>
 </head>
-<body>
-    <div class="results">
-        <h2>Game Over!</h2>
-        <p>Your final score: {{ score }}</p>
-        <p>High score: {{ high_score }}</p>
-        <form action="{{ url_for('home') }}" method="GET">
-            <button type="submit" class="btn-home">Back to Home</button>
-        </form>
+<body class="bg-gradient-to-b from-indigo-900 to-purple-900 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white bg-opacity-90 rounded-xl shadow-2xl p-8 max-w-md w-full text-center relative overflow-hidden">
+        <!-- Decorative elements -->
+        <div class="absolute -top-16 -right-16 w-32 h-32 bg-purple-500 rounded-full opacity-20"></div>
+        <div class="absolute -bottom-8 -left-8 w-40 h-40 bg-indigo-500 rounded-full opacity-20"></div>
+        
+        <!-- Header with animation -->
+        <div class="mb-6 transform transition-transform duration-500 hover:scale-110">
+            <i class="fas fa-trophy text-6xl text-yellow-500 mb-4"></i>
+            <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">
+                Game Over
+            </h1>
+        </div>
+
+        <!-- Score Display -->
+        <div class="bg-gray-100 rounded-lg p-6 mb-6 shadow-inner">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <p class="text-sm text-gray-600">Your Score</p>
+                    <p class="text-4xl font-bold text-gray-800" id="finalScore">{{ final }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">High Score</p>
+                    <p class="text-4xl font-bold text-indigo-600" id="highScore">{{ high_score }}</p>
+                </div>
+            </div>
+
+            <!-- Celebration message -->
+            {% if final == high_score %}
+                <div class="py-2 px-4 bg-yellow-100 text-yellow-800 rounded-lg animate-pulse">
+                    <i class="fas fa-crown mr-2"></i>
+                    New High Score!
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex flex-col space-y-4">
+            <a href="{{ url_for('home') }}" 
+               class="bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-6 rounded-lg font-medium transition duration-300 transform hover:scale-105">
+                <i class="fas fa-home mr-2"></i> Back to Home
+            </a>
+            <a href="{{ url_for('game') }}" 
+               class="bg-purple-600 hover:bg-purple-700 text-white py-3 px-6 rounded-lg font-medium transition duration-300 transform hover:scale-105">
+                <i class="fas fa-redo mr-2"></i> Play Again
+            </a>
+        </div>
     </div>
+
+    <!-- Cheering audio -->
+    <audio id="cheeringAudio" autoplay>
+        <source src="{{ url_for('static', filename='Cheering.mp3') }}" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        // Generate confetti for celebration
+        function createConfetti() {
+            const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#FF5722'];
+            
+            if (document.getElementById('finalScore').textContent === document.getElementById('highScore').textContent) {
+                for (let i = 0; i < 100; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
+                    confetti.style.width = Math.random() * 10 + 5 + 'px';
+                    confetti.style.height = Math.random() * 10 + 5 + 'px';
+                    document.body.appendChild(confetti);
+                }
+            }
+        }
+
+        // Run confetti on page load
+        window.onload = function() {
+            createConfetti();
+            document.getElementById('cheeringAudio').play(); // Play cheering audio
+        };
+    </script>
 </body>
 </html>
