@@ -86,17 +86,18 @@
 
         {% if feedback %}
         <div class="feedback">
-            <h3>{{ feedback }}</h3>
-            <p>Correct answer: {{ correct_title }}</p>
+            <h3>Your Guess: {{ song_guess }}</h3>
+            <p>Correct answer: {{ feedback.correct_title }}</p>
             {% if guess_artist %}
-            <p>Artist: {{ correct_artist }}</p>
+            <p>Artist: {{ feedback.correct_artist }}</p>
             {% endif %}
-            <p>Points earned: {{ points_earned }}</p>
-            <form method="POST" action="{{ url_for('next_round') }}">
-                <button type="submit">Next Round</button>
-            </form>
+            <p>Points earned: {{ feedback.points_earned }}</p>
         </div>
+        <form method="POST">
+            <button type="submit" name="next_round" class="next-round-btn">Next Round</button>
+        </form>
         {% endif %}
+        
     </div>
 
     <script>
@@ -113,4 +114,27 @@
         updateTimer();
     </script>
 </body>
+<style>
+    /* Existing styles... */
+
+    .next-round-btn {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 15px 30px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 1.2em;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .next-round-btn:hover {
+        background-color: #45a049;
+    }
+</style>
+
 </html>

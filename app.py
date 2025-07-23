@@ -86,16 +86,26 @@ def game():
         initialize_game_session()
     
     if request.method == 'POST':
-        process_guess()
-        
-        if session['current_round'] < session['total_rounds']:
-            session['current_round'] += 1
-            setup_new_round()
-        else:
-            end_game()
-            return redirect(url_for('game_over'))
+        if 'song_guess' in request.form:  # Check if a guess was made
+            process_guess()
+            return render_game_template()  # Render the template with feedback
+
+        # If the next round button is clicked
+        if 'next_round' in request.form:
+            if session['current_round'] < session['total_rounds']:
+                session['current_round'] += 1
+                setup_new_round()
+                # Clear feedback after moving to the next round
+                session.pop('feedback', None)
+                session.pop('song_guess', None)
+                session.pop('artist_guess', None)
+            else:
+                end_game()
+                return redirect(url_for('game_over'))
     
     return render_game_template()
+
+
 
 def initialize_game_session():
     session['game_started'] = True
@@ -113,15 +123,30 @@ def process_guess():
 
     # Calculate time taken (in seconds)
     time_taken = datetime.now().timestamp() - session['start_time']
-    
+    points_earned = 0
+
     # Base points (decrease with time)
     if any(user_song_guess.lower() == title.lower() for title in correct_titles):
         base_points = max(20 - int(time_taken), 5)  # Minimum 5 points
         session['score'] += base_points
+        points_earned += base_points
     
     # Bonus artist points
     if session.get('guess_artist', False) and any(user_artist_guess.lower() == artist.lower() for artist in correct_artists):
         session['score'] += 10  # Flat bonus for artist
+        points_earned += 10
+
+    # Store feedback in session
+    session['feedback'] = {
+        'correct_title': correct_titles[0],  # Assuming first title is the correct one
+        'correct_artist': correct_artists[0] if session.get('guess_artist', False) else None,
+        'points_earned': points_earned
+    }
+    
+    # Clear the guesses from the session
+    session['song_guess'] = user_song_guess
+    session['artist_guess'] = user_artist_guess
+
 
 def setup_new_round():
     session['current_song'] = get_new_song()
@@ -138,16 +163,19 @@ def end_game():
     clear_game_session()
 
 def clear_game_session():
-    for key in ['game_started',  'current_round', 'total_rounds', 'current_song', 'start_time']:
+    for key in ['game_started', 'current_round', 'total_rounds', 'current_song', 'start_time', 'feedback']:
         session.pop(key, None)
 
 def render_game_template():
+    feedback = session.get('feedback', None)
     return render_template('game.html', 
                          song=session['current_song'],
                          score=session['score'],
                          current_round=session['current_round'],
                          total_rounds=session['total_rounds'],
-                         guess_artist=session.get('guess_artist', False))
+                         guess_artist=session.get('guess_artist', False),
+                         feedback=feedback)
+
 
 @app.route('/next-round')
 def next_round():
