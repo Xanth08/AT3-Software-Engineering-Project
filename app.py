@@ -69,7 +69,7 @@ def settings():
         session['guess_artist'] = 'guess_artist' in request.form
         session['rounds'] = int(request.form.get('rounds', 5))
         session['volume'] = float(request.form.get('volume', 1.0))
-        return redirect(url_for('home'))  # Changed from 'game' to 'home'
+        return redirect(url_for('home'))
     
     # Add cancel button handling
     if request.args.get('cancel'):
@@ -88,7 +88,7 @@ def game():
     if request.method == 'POST':
         if 'song_guess' in request.form:  # Check if a guess was made
             process_guess()
-            return render_game_template()  # Render the template with feedback
+            return render_game_template()
 
         # If the next round button is clicked
         if 'next_round' in request.form:
@@ -121,7 +121,7 @@ def process_guess():
     correct_titles = session['current_song']['title']
     correct_artists = session['current_song']['artist']
 
-    # Calculate time taken (in seconds)
+    # Calculate time taken
     time_taken = datetime.now().timestamp() - session['start_time']
     points_earned = 0
 
@@ -133,17 +133,16 @@ def process_guess():
     
     # Bonus artist points
     if session.get('guess_artist', False) and any(user_artist_guess.lower() == artist.lower() for artist in correct_artists):
-        session['score'] += 10  # Flat bonus for artist
+        session['score'] += 10
         points_earned += 10
 
     # Store feedback in session
     session['feedback'] = {
-        'correct_title': correct_titles[0],  # Assuming first title is the correct one
+        'correct_title': correct_titles[0],
         'correct_artist': correct_artists[0] if session.get('guess_artist', False) else None,
         'points_earned': points_earned
     }
     
-    # Clear the guesses from the session
     session['song_guess'] = user_song_guess
     session['artist_guess'] = user_artist_guess
 
@@ -159,7 +158,6 @@ def get_new_song():
 def end_game():
     if session['score'] > session.get('high_score', 0):
         session['high_score'] = session['score']
-    # Do not clear the score here, just clear the game session
     clear_game_session()
 
 def clear_game_session():
