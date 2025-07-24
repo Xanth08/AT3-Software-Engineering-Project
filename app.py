@@ -88,8 +88,6 @@ songs = [
 # Route for home page
 @app.route('/')
 def home():
-    # if 'user_id' not in session:
-    #     return redirect(url_for('login'))
     return render_template('home.html', high_score=session.get('high_score', 0))
 
 
@@ -273,11 +271,15 @@ def next_round():
 @app.route('/game-over')
 def game_over():
     final_score = session.get('score', 0)
+    current_user = User.query.filter_by(id=session.get('user_id')).first()
+
+    if current_user and int(final_score) > int(current_user.high_score):
+        current_user.high_score = final_score  # Update the high_score attribute
+        db.session.commit()
+
     return render_template('results.html',
                            final=final_score,
                            high_score=session.get('high_score', 0))
 
-
-# Run the application
 if __name__ == '__main__':
     app.run(debug=True)
